@@ -20,7 +20,7 @@
 		{
 			"1": 
 			{
-				"body": 'console.log("Client connected! --- Client ID:"+clientID"',
+				"body": 'console.log("Client connected! --- Client ID:"+clientID',
 				"erraction": 'console.log(err)'
 			}
 		}
