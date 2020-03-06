@@ -1,7 +1,7 @@
 const fs = require("fs");
 var clients = new Object();
 var clientID=0
-fs.readFile("/storge/emulated/0/websocket/settings.ini","utf8",function read(err,data){
+fs.readFile("/path/file","utf8",function read(err,data){
 	if ( err ){
 		console.log(err) 
 	}else{
@@ -15,7 +15,7 @@ const wss = new ws.Server(
 		port : settings.server.port
 	} 
 );
-var clients = new Array();
+var clients = new Object();
 function commandLine(target,command){
 	target.send(
 		JSON.stringify(
@@ -39,33 +39,37 @@ function commandLine(target,command){
 	);
 	
 };
-function addEventListener(target,event){
-	target.send(
-		JSON.stringify(
-			{
-				"body": {
-					"eventName": event 
-				},
-				"header": {
-					"requestId": "00000000-0000-0000-0000-000000000002",
-					"messagePurpose": "subscribe",
-					"version": 1,
-					"messageType": "commandRequest"
+function addEventListener(target,event,callback){
+	var addEvtPromise = new Promise(function(resolve, reject) {
+		target.send(
+			JSON.stringify(
+				{
+					"body": {
+						"eventName": event 
+					},
+					"header": {
+						"requestId": "00000000-0000-0000-0000-000000000002",
+						"messagePurpose": "subscribe",
+						"version": 1,
+						"messageType": "commandRequest"
+					}
 				}
-			}
-		)
-	)
+			)
+		);
+	}).then(eval(callback));
 };
-function eventListener(target,func,isDecodeJSON){
-	target.on("message",function message(msg){
-		if ( isDecodeJSON ){
-			message = JSON.parse(msg);
-			eval(func);
-		}else{
-			message = msg;
-			eval(func);
-		};
-	});
+function eventListener(target,func,isDecodeJSON,callback){
+	var addEvtPromise = new Promise(function(resolve, reject) {
+		target.on("message",function message(msg){
+			if ( isDecodeJSON ){
+				message = JSON.parse(msg);
+				eval(func);
+			}else{
+				message = msg;
+				eval(func);
+			};
+		});
+	}).then(eval(callback));
 };
 function permissionCheck(permission,player){
 	for(key in settings.server.permissions[permission]){
