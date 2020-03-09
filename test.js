@@ -10,6 +10,7 @@ fs.readFile("/path/file","utf8",function read(err,data){
 });
 
 const ws = require("ws");
+const uuid = require("uuid");
 const wss = new ws.Server( 
 	{
 		port : settings.server.port
@@ -21,28 +22,39 @@ function commandLine(target,command,callback){
 	if( callback == null || callback == undefined){
 		callback=''
 	};
-	var cmdLinePromise = new Promise(((resolve, reject)=>{
-		target.send(
-			JSON.stringify(
-				{
-					"body": {
-						"origin": 
-						{
-							"type": "player"
+	new Promise(((resolve, reject)=>{
+		try{
+			let requestId = uuid.v4;
+			let state = new Object();
+			let state.stateCode = 0;
+			target.send(
+				JSON.stringify(
+					{
+						"body": {
+							"origin": 
+							{
+								"type": "player"
+							},
+							"commandLine": command,
+							"version": 1
 						},
-						"commandLine": command,
-						"version": 1
-					},
-					"header": {
-						"requestId": "00000000-0000-0000-000000000001",
-						"messagePurpose": "commandRequest",
-						"version": 1,
-						"messageType": "commandRequest"
+						"header": {
+							"requestId": requestId,
+							"messagePurpose": "commandRequest",
+							"version": 1,
+							"messageType": "commandRequest"
+						}
 					}
-				}
-			)
-		)
+				)
+			);
+			let state.requestId = requestId;
+		}catch(err){
+			let state.stateCode = -1;
+			let state.error = err;
+		};
+		resolve(state);
 	})).then(
+		eventListener(
 		if(typeof(callback)=="function"){
 			try{
 				callback(value);
@@ -60,25 +72,81 @@ function commandLine(target,command,callback){
 };
 function addEventListener(target,event,callback){
 	var callback;
-	if( callback == null || callback == undefined){
+	if( callback == null || callback == undefined ){
 		callback=''
 	};
-	var addEvtPromise = new Promise(((resolve, reject)=>{
-		target.send(
-			JSON.stringify(
-				{
-					"body": {
-						"eventName": event 
-					},
-					"header": {
-						"requestId": "00000000-0000-0000-0000-000000000002",
-						"messagePurpose": "subscribe",
-						"version": 1,
-						"messageType": "commandRequest"
+	new Promise(((resolve, reject)=>{
+		try{
+			let requestId=uuid.v4;
+			let state = new Object();
+			let state.stateCode = 0;
+			target.send(
+				JSON.stringify(
+					{
+						"body": {
+							"eventName": event 
+						},
+						"header": {
+							"requestId": requestId,
+							"messagePurpose": "unsubscribe",
+							"version": 1,
+							"messageType": "commandRequest"
+						}
 					}
-				}
-			)
-		);
+				)
+			);
+			let state.requestId = requestId;
+		}catch(err){
+			let state.stateCode = -1;
+			let state.error = err;
+		};
+		resolve(state);
+	})).then(
+		if(typeof(callback)=="function"){
+			try{
+				callback(value);
+			}catch(err){
+				throw err;
+			}
+		}else{
+			try{
+				eval(callback);
+			}catch(err){
+				throw err;
+			}
+		}
+	)
+};
+function removeEventListener(target,event,callback){
+	var callback;
+	if( callback == null || callback == undefined ){
+		callback=''
+	};
+	new Promise(((resolve, reject)=>{
+		try{
+			let requestId=uuid.v4;
+			let state = new Object();
+			let state.stateCode = 0;
+			target.send(
+				JSON.stringify(
+					{
+						"body": {
+							"eventName": event 
+						},
+						"header": {
+							"requestId": requestId,
+							"messagePurpose": "subscribe",
+							"version": 1,
+							"messageType": "commandRequest"
+						}
+					}
+				)
+			);
+		}catch(err){
+			let state.stateCode = -1;
+			let state.error = err;
+		};
+		resolve(state);
 	})).then(
 		if(typeof(callback)=="function"){
 			try{
@@ -100,16 +168,23 @@ function eventListener(target,func,isDecodeJSON,callback){
 	if( callback == null || callback == undefined){
 		callback=''
 	};
-	var addEvtPromise = new Promise(((resolve, reject)=>{
-		target.on("message",function message(msg){
-			if ( isDecodeJSON ){
-				message = JSON.parse(msg);
-				eval(func);
-			}else{
-				message = msg;
-				eval(func);
-			};
-		});
+	new Promise(((resolve, reject)=>{
+		try{
+			let state = new Object();
+			let state.stateCode = 0;
+			target.on("message",function message(msg){
+				if ( isDecodeJSON ){
+					message = JSON.parse(msg);
+					eval(func);
+				}else{
+					message = msg;
+					eval(func);
+				};
+			});
+			
+		}catch(err){
+			let state.stateCode = -1;
+			let state.error = err;
 	})).then(
 		if(typeof(callback)=="function"){
 			try{
