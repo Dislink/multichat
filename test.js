@@ -16,31 +16,54 @@ const wss = new ws.Server(
 	} 
 );
 var clients = new Object();
-function commandLine(target,command){
-	target.send(
-		JSON.stringify(
-			{
-				"body": {
-					"origin": 
-					{
-						"type": "player"
+function commandLine(target,command,callback){
+	var callback;
+	if( callback == null || callback == undefined){
+		callback=''
+	};
+	var cmdLinePromise = new Promise(((resolve, reject)=>{
+		target.send(
+			JSON.stringify(
+				{
+					"body": {
+						"origin": 
+						{
+							"type": "player"
 						},
 						"commandLine": command,
 						"version": 1
-						},
-				"header": {
-					"requestId": "00000000-0000-0000-000000000001",
-					"messagePurpose": "commandRequest",
-					"version": 1,
-					"messageType": "commandRequest"
+					},
+					"header": {
+						"requestId": "00000000-0000-0000-000000000001",
+						"messagePurpose": "commandRequest",
+						"version": 1,
+						"messageType": "commandRequest"
+					}
 				}
-			}
+			)
 		)
-	);
-	
+	})).then(
+		if(typeof(callback)=="function"){
+			try{
+				callback(value);
+			}catch(err){
+				throw err;
+			}
+		}else{
+			try{
+				eval(callback);
+			}catch(err){
+				throw err;
+			}
+		}
+	)
 };
 function addEventListener(target,event,callback){
-	var addEvtPromise = new Promise(function(resolve, reject) {
+	var callback;
+	if( callback == null || callback == undefined){
+		callback=''
+	};
+	var addEvtPromise = new Promise(((resolve, reject)=>{
 		target.send(
 			JSON.stringify(
 				{
@@ -56,10 +79,28 @@ function addEventListener(target,event,callback){
 				}
 			)
 		);
-	}).then(eval(callback));
+	})).then(
+		if(typeof(callback)=="function"){
+			try{
+				callback(value);
+			}catch(err){
+				throw err;
+			}
+		}else{
+			try{
+				eval(callback);
+			}catch(err){
+				throw err;
+			}
+		}
+	)
 };
 function eventListener(target,func,isDecodeJSON,callback){
-	var addEvtPromise = new Promise(function(resolve, reject) {
+	var callback;
+	if( callback == null || callback == undefined){
+		callback=''
+	};
+	var addEvtPromise = new Promise(((resolve, reject)=>{
 		target.on("message",function message(msg){
 			if ( isDecodeJSON ){
 				message = JSON.parse(msg);
@@ -69,7 +110,21 @@ function eventListener(target,func,isDecodeJSON,callback){
 				eval(func);
 			};
 		});
-	}).then(eval(callback));
+	})).then(
+		if(typeof(callback)=="function"){
+			try{
+				callback(value);
+			}catch(err){
+				throw err;
+			}
+		}else{
+			try{
+				eval(callback);
+			}catch(err){
+				throw err;
+			}
+		}
+	);
 };
 function permissionCheck(permission,player){
 	for(key in settings.server.permissions[permission]){
