@@ -14,6 +14,7 @@ var rowstr = fs.readFileSync("C:/Users/Administrator/Desktop/settings.json","utf
 var settings = JSON.parse(rowstr);
 normalFeedbackEnabled=true;
 showFeedback=true;
+try{
 const wss = new ws.Server(
 	{
 		port : settings.server.port
@@ -368,4 +369,7 @@ var clients = new Array();
 			};
 		};
 	};
-
+}catch(ERROR){
+	commandLine(currentClient,'tellraw @a {"rawtext":[{"text":"§c[ERROR]§r:§a'+ERROR+'§r"}]}');
+	console.warn(ERROR);
+};
