@@ -1,0 +1,55 @@
+{
+	"onconnection": 
+	{
+		"commands": 
+		{
+			"1": 
+			{
+				"body": "tellraw @a {\"rawtext\":[{\"text\":\"Connected!\"}]}",
+				"responnse": false
+			},
+			"2": 
+			{
+				"body": "agent create",
+				"responnse": false
+			}
+		},
+		"console": 
+		{
+			"1": 
+			{
+				"body": "console.log('Client connected! --- Client ID:'+clientId)",
+				"erraction": "console.log(err)"
+			}
+		}
+	},
+	"onmessage": 
+	{
+		"commands": 
+		{
+		},
+		"console": 
+		{
+		}
+	},
+	"ondisconnection": 
+	{
+		"console": 
+		{
+			"1": 
+			{
+				"body": "console.log('Client disconnected! --- ClientId'+clientId)",
+				"erraction": "console.log(err)"
+			}
+		}
+	},
+	"server": 
+	{
+		"port": 16384,
+		"permissions":
+		{
+			"Dislink 3000": 7,
+			"Dislink_3000": 7
+		}
+	}
+}
